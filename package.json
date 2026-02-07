@@ -8,6 +8,7 @@
     "test": "hardhat test",
     "compile": "hardhat compile",
     "deploy": "hardhat run scripts/deploy.cjs --network localhost",
+    "deploy:sepolia": "hardhat run scripts/deploy.cjs --network sepolia",
     "node": "hardhat node",
     "frontend": "cd frontend && npm run dev",
     "dev": "hardhat node & cd frontend && npm run dev"

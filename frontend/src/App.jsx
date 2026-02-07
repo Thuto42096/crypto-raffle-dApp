@@ -4,6 +4,20 @@ import './App.css';
 import RaffleABI from './contracts/Raffle.json';
 import contractAddress from './contracts/contract-address.json';
 
+// Sepolia Testnet Configuration
+const SEPOLIA_CHAIN_ID = '0xaa36a7'; // 11155111 in hex
+const SEPOLIA_NETWORK = {
+  chainId: SEPOLIA_CHAIN_ID,
+  chainName: 'Sepolia Testnet',
+  nativeCurrency: {
+    name: 'Sepolia ETH',
+    symbol: 'ETH',
+    decimals: 18
+  },
+  rpcUrls: ['https://sepolia.infura.io/v3/a29782d9c5a64d6dbacaa40a4c4fc262'],
+  blockExplorerUrls: ['https://sepolia.etherscan.io']
+};
+
 function App() {
   const [account, setAccount] = useState(null);
   const [contract, setContract] = useState(null);
@@ -19,6 +33,7 @@ function App() {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [networkError, setNetworkError] = useState(false);
 
   useEffect(() => {
     initializeProvider();
@@ -48,9 +63,69 @@ function App() {
     }
   }, [contract]);
 
+  const checkAndSwitchNetwork = async () => {
+    if (typeof window.ethereum === 'undefined') {
+      setMessage('Please install MetaMask to use this dApp');
+      return false;
+    }
+
+    try {
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+
+      if (chainId !== SEPOLIA_CHAIN_ID) {
+        setNetworkError(true);
+        setMessage('⚠️ Please switch to Sepolia Testnet');
+
+        try {
+          // Try to switch to Sepolia
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: SEPOLIA_CHAIN_ID }],
+          });
+          setNetworkError(false);
+          setMessage('✅ Switched to Sepolia Testnet');
+          return true;
+        } catch (switchError) {
+          // This error code indicates that the chain has not been added to MetaMask
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [SEPOLIA_NETWORK],
+              });
+              setNetworkError(false);
+              setMessage('✅ Sepolia Testnet added and switched');
+              return true;
+            } catch (addError) {
+              console.error('Error adding Sepolia network:', addError);
+              setMessage('❌ Failed to add Sepolia network');
+              return false;
+            }
+          } else {
+            console.error('Error switching network:', switchError);
+            setMessage('❌ Failed to switch to Sepolia network');
+            return false;
+          }
+        }
+      }
+
+      setNetworkError(false);
+      return true;
+    } catch (error) {
+      console.error('Error checking network:', error);
+      return false;
+    }
+  };
+
   const initializeProvider = async () => {
     if (typeof window.ethereum !== 'undefined') {
       try {
+        // Check and switch to Sepolia network
+        const isCorrectNetwork = await checkAndSwitchNetwork();
+        if (!isCorrectNetwork) {
+          return;
+        }
+
         const provider = new ethers.BrowserProvider(window.ethereum);
         setProvider(provider);
 
@@ -70,6 +145,12 @@ function App() {
         // Listen for account changes
         window.ethereum.on('accountsChanged', (accounts) => {
           setAccount(accounts[0]);
+          window.location.reload();
+        });
+
+        // Listen for network changes
+        window.ethereum.on('chainChanged', (chainId) => {
+          window.location.reload();
         });
       } catch (error) {
         console.error('Error initializing provider:', error);
@@ -145,17 +226,27 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>🎰 Crypto Raffle dApp</h1>
-        <p className="subtitle">ETH Reward Pool</p>
+        <p className="subtitle">ETH Reward Pool - Sepolia Testnet</p>
       </header>
 
       {account ? (
         <div className="account-info">
           <p>Connected: {account.slice(0, 6)}...{account.slice(-4)}</p>
+          <p className="network-badge">🌐 Sepolia Testnet</p>
         </div>
       ) : (
         <button onClick={initializeProvider} className="connect-btn">
           Connect Wallet
         </button>
+      )}
+
+      {networkError && (
+        <div className="network-warning">
+          <p>⚠️ Wrong Network Detected</p>
+          <button onClick={checkAndSwitchNetwork} className="switch-network-btn">
+            Switch to Sepolia Testnet
+          </button>
+        </div>
       )}
 
       {message && <div className="message">{message}</div>}
