@@ -11,7 +11,8 @@
     "deploy:sepolia": "hardhat run scripts/deploy.cjs --network sepolia",
     "node": "hardhat node",
     "frontend": "cd frontend && npm run dev",
-    "dev": "hardhat node & cd frontend && npm run dev"
+    "dev": "hardhat node & cd frontend && npm run dev",
+    "build": "cd frontend && npm install && npm run build"
   },
   "keywords": [],
   "author": "",
