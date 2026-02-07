@@ -1,0 +1,22 @@
+{
+  "name": "crypto-raffle-dapp",
+  "version": "1.0.0",
+  "description": "A simple ETH Reward pool",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.js --network localhost",
+    "node": "hardhat node",
+    "frontend": "cd frontend && npm run dev",
+    "dev": "hardhat node & cd frontend && npm run dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "hardhat": "^3.1.7"
+  }
+}
