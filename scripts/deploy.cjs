@@ -1,12 +1,11 @@
-import hre from "hardhat";
-import { ethers } from "hardhat";
-import fs from "fs";
+const hre = require("hardhat");
+const fs = require("fs");
 
 async function main() {
   console.log("Deploying Raffle contract...");
 
   // Entry fee: 0.01 ETH
-  const entryFee = ethers.parseEther("0.01");
+  const entryFee = hre.ethers.parseEther("0.01");
 
   const Raffle = await hre.ethers.getContractFactory("Raffle");
   const raffle = await Raffle.deploy(entryFee);
@@ -15,7 +14,7 @@ async function main() {
 
   const address = await raffle.getAddress();
   console.log(`Raffle contract deployed to: ${address}`);
-  console.log(`Entry fee set to: ${ethers.formatEther(entryFee)} ETH`);
+  console.log(`Entry fee set to: ${hre.ethers.formatEther(entryFee)} ETH`);
 
   // Save the contract address to a file for the frontend
   const contractsDir = "./frontend/src/contracts";
